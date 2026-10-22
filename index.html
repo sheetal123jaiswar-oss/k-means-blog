@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K-Means Clustering | ML Discovery Lab</title>
+<style>
+:root{--ink:#35251d;--orange:#e87525;--cream:#fff8ed;--peach:#ffead5;--muted:#79685d;--green:#27836b}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.7 Arial,sans-serif}
+header{padding:16px 7%;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;background:#fffdf9;border-bottom:1px solid #f1dfca}
+.logo{font-size:21px;font-weight:900;letter-spacing:.5px}.logo span{color:var(--orange)}
+nav{display:flex;gap:15px;flex-wrap:wrap}nav a{color:var(--ink);font-size:13px;text-decoration:none;font-weight:bold}
+.hero{padding:60px 7%;background:linear-gradient(120deg,#fff0dc,#ffdbb4);display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:30px}
+.eyebrow{font-size:12px;font-weight:bold;letter-spacing:2px;color:#a84f13}
+h1{font-size:clamp(38px,6vw,66px);line-height:1.08;margin:13px 0;color:#522d1c}
+.hero p{max-width:560px;color:#6e4b37}
+.btn{display:inline-block;background:var(--orange);color:white;padding:12px 19px;border-radius:10px;text-decoration:none;font-weight:bold}
+.art{background:#fffaf4;padding:15px;border-radius:25px;box-shadow:0 15px 35px #a9571718}
+.art svg{width:100%;display:block}
+main{max-width:1100px;margin:auto;padding:35px 20px}
+h2{font-size:clamp(25px,4vw,34px);line-height:1.2;color:#542f1d;margin:10px 0}
+h3{color:#683c25;margin:8px 0}
+.lead{color:var(--muted);margin-top:0}
+.pill{display:inline-block;border-radius:30px;background:#ffead5;color:#9a4c17;padding:4px 11px;font-size:12px;font-weight:bold}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.card{background:#fff;border:1px solid #f0e2d2;border-radius:17px;padding:20px;box-shadow:0 7px 24px #6b3c1708}
+.icon{font-size:28px}
+.section{margin-top:55px}
+.lab{background:white;border:1px solid #efdcca;border-radius:22px;padding:20px}
+.labgrid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;align-items:start}
+#clusterplot{width:100%;display:block;background:#fffaf4;border-radius:14px;border:1px solid #f1e2d1}
+label{display:block;font-weight:bold;margin:12px 0 5px}
+input[type=range]{width:100%;accent-color:var(--orange)}
+select{width:100%;padding:10px;border:1px solid #e4d1bd;border-radius:9px;background:white}
+.stat{background:#fff1e2;padding:15px;border-radius:14px;margin-top:15px}
+.stat strong{font-size:27px;color:#bc5d19}
+.formula{padding:18px;border-radius:13px;background:#39291f;color:#fff1dd;overflow-wrap:anywhere;font-size:17px}
+.steps{display:grid;gap:13px}
+.step{display:flex;gap:13px;align-items:flex-start}
+.num{min-width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:#ffead5;color:#a94f14;font-weight:bold}
+.note{border-left:4px solid var(--orange);background:#fff;padding:14px 17px;border-radius:0 12px 12px 0}
+ul{padding-left:22px}
+.quiz button{display:block;width:100%;padding:12px;margin:9px 0;border:1px solid #ead9c7;background:#fffaf4;color:var(--ink);text-align:left;border-radius:10px;cursor:pointer}
+.quiz button:hover{border-color:var(--orange)}
+#quizresult{font-weight:bold}
+a{color:#a94f14}
+.small{font-size:13px;color:var(--muted)}
+footer{margin-top:40px;padding:30px 20px;text-align:center;background:#39291f;color:#fff0df}
+@media(max-width:760px){.hero{grid-template-columns:1fr;padding:42px 6%}.grid{grid-template-columns:1fr}.labgrid{grid-template-columns:1fr}header{padding:15px 5%}nav{gap:10px}main{padding:28px 16px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">CLUSTER<span>LAB.</span></div>
+ <nav><a href="#about">Learn</a><a href="#play">Try Demo</a><a href="#steps">Algorithm</a><a href="#quiz">Quiz</a></nav>
+</header>
+
+<section class="hero">
+ <div>
+  <div class="eyebrow">MACHINE LEARNING · TOPIC 05</div>
+  <h1>Find the pattern.<br>Group the data.</h1>
+  <p>Discover K-Means Clustering, an unsupervised learning algorithm that groups similar data points together. Experiment with K and watch the clusters change.</p>
+  <a class="btn" href="#play">Enter the Cluster Lab ↓</a>
+ </div>
+ <div class="art">
+  <svg viewBox="0 0 340 245" role="img" aria-label="Illustration of three data clusters">
+   <rect width="340" height="245" rx="15" fill="#fffaf4"/>
+   <g stroke="#eadbc9" stroke-width="1"><path d="M25 40H315M25 80H315M25 120H315M25 160H315M25 200H315M55 20V220M95 20V220M135 20V220M175 20V220M215 20V220M255 20V220M295 20V220"/></g>
+   <g fill="#e87525"><circle cx="65" cy="60" r="7"/><circle cx="91" cy="82" r="7"/><circle cx="55" cy="102" r="7"/><circle cx="110" cy="53" r="7"/><circle cx="82" cy="119" r="7"/></g>
+   <g fill="#27836b"><circle cx="220" cy="55" r="7"/><circle cx="248" cy="81" r="7"/><circle cx="278" cy="49" r="7"/><circle cx="264" cy="110" r="7"/><circle cx="211" cy="94" r="7"/></g>
+   <g fill="#8b6bd6"><circle cx="145" cy="153" r="7"/><circle cx="173" cy="177" r="7"/><circle cx="195" cy="151" r="7"/><circle cx="150" cy="202" r="7"/><circle cx="204" cy="197" r="7"/></g>
+   <g fill="white" stroke-width="3"><circle cx="80" cy="82" r="12" stroke="#e87525"/><circle cx="245" cy="73" r="12" stroke="#27836b"/><circle cx="174" cy="176" r="12" stroke="#8b6bd6"/></g>
+   <g fill="#39291f" font-size="12" font-weight="bold" text-anchor="middle"><text x="80" y="86">C1</text><text x="245" y="77">C2</text><text x="174" y="180">C3</text></g>
+  </svg>
+ </div>
+</section>
+
+<main>
+<section id="about">
+ <span class="pill">01 · INTRODUCTION</span>
+ <h2>What is K-Means Clustering?</h2>
+ <p>K-Means is an <b>unsupervised machine learning algorithm</b> used to divide data into K groups, called clusters. It places similar data points in the same cluster based on their features. Unlike supervised learning, it does not require pre-labelled target classes.</p>
+ <div class="grid">
+  <article class="card"><div class="icon">🎯</div><h3>Find groups</h3><p>Discover natural groupings in data when the correct labels are not already known.</p></article>
+  <article class="card"><div class="icon">📍</div><h3>Use centroids</h3><p>A centroid represents the centre of a cluster and is updated as assignments change.</p></article>
+  <article class="card"><div class="icon">🔁</div><h3>Repeat and improve</h3><p>Assign points and recalculate centres until the clusters stabilise or a stopping rule is met.</p></article>
+ </div>
+</section>
+
+<section class="section">
+ <span class="pill">02 · OBJECTIVES</span>
+ <h2>Project Objectives</h2>
+ <div class="card">
+  <ul>
+   <li>Understand the concept of unsupervised learning and clustering.</li>
+   <li>Explain the K-Means algorithm step by step.</li>
+   <li>Explore how the value of K affects cluster assignments.</li>
+   <li>Understand centroids and within-cluster variation.</li>
+   <li>Identify practical applications, strengths and limitations of K-Means.</li>
+  </ul>
+ </div>
+</section>
+
+<section class="section" id="play">
+ <span class="pill">03 · INTERACTIVE EXPERIMENT</span>
+ <h2>The Cluster Playground</h2>
+ <p class="lead">Change K and inspect the illustrative data. Different colours indicate different assigned clusters; stars show the current centroids.</p>
+ <div class="lab">
+  <div class="labgrid">
+   <div>
+    <svg id="clusterplot" viewBox="0 0 420 300" role="img" aria-label="Interactive K-Means clustering scatter plot"></svg>
+    <p class="small">Illustrative, two-dimensional sample data; not real-world measurements. The demonstration uses fixed sample points and an educational assignment to illustrate cluster membership.</p>
+   </div>
+   <div>
+    <label for="k">Number of clusters (K): <span id="ktext">3</span></label>
+    <input id="k" type="range" min="2" max="4" value="3" step="1">
+    <div class="stat"><div class="small">CLUSTERS SHOWN</div><strong id="clusterCount">3</strong><p id="clusterDescription">Data points are grouped by their nearest displayed centre.</p></div>
+    <label for="example">Explore a use case</label>
+    <select id="example">
+     <option value="customers">Customer segmentation</option>
+     <option value="shops">Store locations</option>
+     <option value="images">Image colour compression</option>
+    </select>
+    <div class="note" id="usecase" style="margin-top:12px">A business can group customers by purchasing patterns to plan different marketing strategies.</div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section class="section" id="steps">
+ <span class="pill">04 · HOW IT WORKS</span>
+ <h2>The K-Means Algorithm</h2>
+ <div class="card steps">
+  <div class="step"><div class="num">1</div><div><b>Choose K</b><br>Decide how many clusters to create.</div></div>
+  <div class="step"><div class="num">2</div><div><b>Initialise centroids</b><br>Choose K starting centre points, often using a method such as K-Means++.</div></div>
+  <div class="step"><div class="num">3</div><div><b>Assign data points</b><br>Assign each point to its nearest centroid, commonly using Euclidean distance.</div></div>
+  <div class="step"><div class="num">4</div><div><b>Update centroids</b><br>Calculate the mean position of the points assigned to each cluster.</div></div>
+  <div class="step"><div class="num">5</div><div><b>Repeat</b><br>Repeat assignment and updating until assignments stop changing or a stopping limit is reached.</div></div>
+ </div>
+</section>
+
+<section class="section">
+ <span class="pill">05 · MATHEMATICS</span>
+ <h2>Important Formulas</h2>
+ <div class="grid">
+  <article class="card"><h3>Euclidean distance</h3><div class="formula">d(x, μ) = √Σ(xᵢ − μᵢ)²</div><p>Measures the straight-line distance between a data point x and a centroid μ.</p></article>
+  <article class="card"><h3>Centroid update</h3><div class="formula">μⱼ = (1 / nⱼ) Σ xᵢ</div><p>The new centroid is the mean of the points assigned to cluster j.</p></article>
+  <article class="card"><h3>Objective function</h3><div class="formula">WCSS = Σⱼ Σᵢ∈Cⱼ ||xᵢ − μⱼ||²</div><p>K-Means seeks to minimise the total squared distance within clusters.</p></article>
+ </div>
+ <p class="small">Notation: x is a data point, μ is a centroid, nⱼ is the number of points in cluster j, and Cⱼ is the set of points assigned to cluster j.</p>
+</section>
+
+<section class="section">
+ <span class="pill">06 · REAL-WORLD USE</span>
+ <h2>Applications of K-Means</h2>
+ <div class="grid">
+  <article class="card"><div class="icon">🛍️</div><h3>Customer segmentation</h3><p>Group customers with similar purchasing or browsing behaviour.</p></article>
+  <article class="card"><div class="icon">🗺️</div><h3>Location analysis</h3><p>Explore geographic groupings of stores, service areas or delivery points.</p></article>
+  <article class="card"><div class="icon">🖼️</div><h3>Image compression</h3><p>Group similar pixel colours and represent them with a smaller colour palette.</p></article>
+ </div>
+</section>
+
+<section class="section">
+ <span class="pill">07 · EVALUATION</span>
+ <h2>Advantages and Limitations</h2>
+ <div class="grid">
+  <article class="card"><h3>✅ Advantages</h3><ul><li>Easy to understand and implement.</li><li>Works well on many numeric datasets.</li><li>Can efficiently group large datasets with suitable implementations.</li></ul></article>
+  <article class="card"><h3>⚠️ Limitations</h3><ul><li>K must be chosen in advance.</li><li>Initial centroids can affect the result.</li><li>Outliers and feature scales can influence clusters.</li><li>May perform poorly on irregularly shaped clusters.</li></ul></article>
+  <article class="card"><h3>💡 Practical tip</h3><p>Scale features when appropriate and compare candidate values of K using methods such as the elbow method and silhouette score.</p></article>
+ </div>
+</section>
+
+<section class="section">
+ <span class="pill">08 · COMPARISON</span>
+ <h2>K-Means vs. KNN</h2>
+ <div class="card" style="overflow-x:auto">
+  <table style="width:100%;border-collapse:collapse;text-align:left">
+   <tr><th style="padding:10px;border-bottom:1px solid #ead9c7">Feature</th><th style="padding:10px;border-bottom:1px solid #ead9c7">K-Means</th><th style="padding:10px;border-bottom:1px solid #ead9c7">KNN</th></tr>
+   <tr><td style="padding:10px;border-bottom:1px solid #f0e2d2">Learning type</td><td style="padding:10px;border-bottom:1px solid #f0e2d2">Unsupervised</td><td style="padding:10px;border-bottom:1px solid #f0e2d2">Supervised</td></tr>
+   <tr><td style="padding:10px;border-bottom:1px solid #f0e2d2">Main purpose</td><td style="padding:10px;border-bottom:1px solid #f0e2d2">Discover groups</td><td style="padding:10px;border-bottom:1px solid #f0e2d2">Predict a label or value</td></tr>
+   <tr><td style="padding:10px">Meaning of K</td><td style="padding:10px">Number of clusters</td><td style="padding:10px">Number of neighbours</td></tr>
+  </table>
+ </div>
+</section>
+
+<section class="section" id="quiz">
+ <span class="pill">09 · TEST YOURSELF</span>
+ <h2>Quick Knowledge Check 🧠</h2>
+ <div class="card quiz">
+  <p><b>What does K represent in K-Means?</b></p>
+  <button onclick="quiz(false)">A. Number of features</button>
+  <button onclick="quiz(true)">B. Number of clusters to create</button>
+  <button onclick="quiz(false)">C. Number of rows in the dataset</button>
+  <p id="quizresult" aria-live="polite"></p>
+ </div>
+</section>
+
+<section class="section">
+ <span class="pill">10 · CONCLUSION</span>
+ <h2>Conclusion</h2>
+ <div class="card">
+  <p>K-Means Clustering is a widely used unsupervised machine learning algorithm that organises data into groups based on similarity. It works by assigning data points to the nearest centroid and repeatedly updating the centroids until the clusters stabilise. This project demonstrates how the choice of K changes the grouping process and explains the algorithm's mathematical foundation, practical uses and limitations. K-Means is a useful starting point for discovering patterns in unlabelled data, although results depend on the data, feature scaling and centroid initialisation.</p>
+ </div>
+</section>
+
+<section class="section">
+ <span class="pill">11 · REFERENCES</span>
+ <h2>Learn More</h2>
+ <div class="card">
+  <p><a href="https://scikit-learn.org/stable/modules/clustering.html#k-means" target="_blank" rel="noopener">Scikit-learn — K-Means Clustering</a></p>
+  <p><a href="https://developers.google.com/machine-learning/clustering" target="_blank" rel="noopener">Google — Clustering in Machine Learning</a></p>
+  <p><a href="https://www.ibm.com/think/topics/k-means-clustering" target="_blank" rel="noopener">IBM — K-Means Clustering Overview</a></p>
+  <p class="small">The interactive visualisation uses illustrative sample data for educational purposes. It is not a benchmark or a claim about real-world clustering performance.</p>
+ </div>
+</section>
+
+<section class="section">
+ <div class="card" style="text-align:center;background:#fff0dc">
+  <div class="eyebrow">STUDENT PROJECT</div>
+  <h2>Machine Learning Blog</h2>
+  <p><b>Submitted by: Sheetal Jaiswar</b><br>Roll No.: 55034</p>
+  <p class="small">Topic 05 · K-Means Clustering</p>
+ </div>
+</section>
+</main>
+
+<footer>
+ <b>CLUSTERLAB.</b><br>Understand data. Discover patterns.<br>
+ <span class="small">Educational project by Sheetal Jaiswar · Roll No. 55034</span>
+</footer>
+
+<script>
+const data=[
+[62,55],[83,82],[101,57],[72,112],[112,91],
+[212,53],[236,79],[270,54],[250,112],[205,105],
+[124,184],[150,213],[178,183],[145,246],[191,229],
+[319,202],[341,229],[307,252],[280,213],[347,182]
+];
+const colors=["#e87525","#27836b","#8b6bd6","#2878c8"];
+const centroids={
+2:[[86,83],[258,190]],
+3:[[86,83],[242,80],[157,211]],
+4:[[86,83],[242,80],[157,211],[321,218]]
+};
+const svg=document.getElementById("clusterplot");
+function render(){
+ const k=Number(document.getElementById("k").value);
+ document.getElementById("ktext").textContent=k;
+ document.getElementById("clusterCount").textContent=k;
+ document.getElementById("clusterDescription").textContent="Showing "+k+" example clusters and their representative centres.";
+ const cs=centroids[k];
+ let s='<rect width="420" height="300" fill="#fffaf4"/>';
+ for(let x=40;x<420;x+=40)s+=`<line x1="${x}" y1="20" x2="${x}" y2="270" stroke="#efe2d3"/>`;
+ for(let y=30;y<280;y+=40)s+=`<line x1="30" y1="${y}" x2="400" y2="${y}" stroke="#efe2d3"/>`;
+ s+='<path d="M30 20V270H400" fill="none" stroke="#bba58f"/>';
+ data.forEach(p=>{
+  let best=0,bd=Infinity;
+  cs.forEach((c,i)=>{let d=Math.hypot(p[0]-c[0],p[1]-c[1]);if(d<bd){bd=d;best=i}});
+  s+=`<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="${colors[best]}" stroke="white" stroke-width="1.5"/>`;
+ });
+ cs.forEach((c,i)=>{
+  s+=`<circle cx="${c[0]}" cy="${c[1]}" r="13" fill="white" stroke="${colors[i]}" stroke-width="3"/>`;
+  s+=`<path d="M${c[0]-6} ${c[1]-6}L${c[0]+6} ${c[1]+6}M${c[0]+6} ${c[1]-6}L${c[0]-6} ${c[1]+6}" stroke="${colors[i]}" stroke-width="3"/>`;
+ });
+ s+='<text x="33" y="15" font-size="10" fill="#79685d">Illustrative data points · × Centroids</text>';
+ svg.innerHTML=s;
+}
+document.getElementById("k").addEventListener("input",render);
+document.getElementById("example").addEventListener("change",function(){
+ const cases={
+ customers:"A business can group customers by purchasing patterns to plan different marketing strategies.",
+ shops:"A delivery company can explore groups of nearby locations when planning service areas. Real route planning needs additional constraints.",
+ images:"Pixels with similar colours can be grouped, allowing an image to be represented using a smaller colour palette."
+ };
+ document.getElementById("usecase").textContent=cases[this.value];
+});
+function quiz(correct){
+ const r=document.getElementById("quizresult");
+ r.textContent=correct?"Correct! 🎉 K is the number of clusters to create.":"Not quite! Try again. In K-Means, K specifies how many clusters the algorithm creates.";
+ r.style.color=correct?"#27836b":"#b84c27";
+}
+render();
+</script>
+</body>
+</html>
